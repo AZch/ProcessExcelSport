@@ -13,4 +13,11 @@ module.exports = class Country {
       }
       return false;
   }
+
+  getTeamByName(name) {
+      if (this.teams[name] === undefined) {
+          this.teams[name] = new Team(name);
+      }
+      return this.teams[name];
+  }
 };
