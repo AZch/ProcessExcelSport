@@ -31,11 +31,28 @@ module.exports = class Team {
         return false;
     }
 
-    makeAvangersAfterCount(edges) {
+    makeAvangersAfterCount(edges, isHome) {
         edges.data.Sav.home /= edges.edges.length;
         edges.data.Sav.away /= edges.edges.length;
         edges.data.MKav.home /= edges.edges.length;
         edges.data.MKav.away /= edges.edges.length;
+
+        isHome ? this.calcTable(edges, 'home', 'away') : this.calcTable(edges, 'away', 'home');
+    }
+
+    calcTable(edges, commandThis, commandEnemy) {
+        let count = edges.edges.length;
+        let goals = edges.data.goals;
+        let xG = edges.data.xGSum;
+        let points = edges.data.points;
+        let xPoints = edges.data.xPoints;
+        edges.data.calc.xPav = edges.data.xPoints / count;
+        edges.data.calc.dG = ((goals[commandThis] - goals[commandEnemy]) - (xG[commandThis] - xG[commandEnemy])) / count;
+        edges.data.calc.xGav = xG[commandThis] / count;
+        edges.data.calc.xGAav = xG[commandEnemy] / count;
+        edges.data.calc.xgAvSum = edges.data.calc.xGav + edges.data.calc.xGAav;
+        edges.data.calc.Gby_xG = (goals[commandThis] + goals[commandEnemy]) / (xG[commandThis] + xG[commandEnemy]);
+        edges.data.calc.fortune = (points - xPoints) / count;
     }
 
     updateEdgeData(newEdge, oldEdgeData, isHome) {
@@ -48,8 +65,8 @@ module.exports = class Team {
             oldEdgeData.x++;
             oldEdgeData.points += 1;
         }
-        oldEdgeData.goalsHome += newEdge.baseData.data.home;
-        oldEdgeData.goalsAway += newEdge.baseData.data.away;
+        oldEdgeData.goals.home += newEdge.baseData.data.home;
+        oldEdgeData.goals.away += newEdge.baseData.data.away;
 
         oldEdgeData.xGSum.home += newEdge.baseData.data.xG.home;
         oldEdgeData.xGSum.away += newEdge.baseData.data.xG.away;
@@ -71,8 +88,10 @@ module.exports = class Team {
             lose: 0,
             points: 0,
             xPoints: 0,
-            goalsHome: 0,
-            goalsAway: 0,
+            goals: {
+                home: 0,
+                away: 0,
+            },
             xGSum: {
                 home: 0,
                 away: 0
@@ -87,7 +106,17 @@ module.exports = class Team {
                 away: 0,
                 under: 0,
                 over: 0
+            },
+            calc: {
+                xPav: undefined,
+                dG: undefined,
+                xGav: undefined,
+                xGAav: undefined,
+                xgAvSum: undefined,
+                Gby_xG: undefined,
+                fortune: undefined
             }
+
         }
     }
 };

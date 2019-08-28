@@ -36,8 +36,8 @@ function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
         }
 
         country.teams.forEach((team) => {
-            team.makeAvangersAfterCount(team.edgesHome);
-            team.makeAvangersAfterCount(team.edgesAway);
+            team.makeAvangersAfterCount(team.edgesHome, true);
+            team.makeAvangersAfterCount(team.edgesAway, false);
         });
         return country;
         countrys.push(country);
