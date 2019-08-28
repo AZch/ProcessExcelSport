@@ -4,6 +4,24 @@ module.exports = class Country {
   constructor(countryName) {
       this.countryName = countryName;
       this.teams = new Map();
+      this.data = {
+          xGSum: {
+              home: 0,
+              away: 0
+          },
+          Sav: {
+              home: 0,
+              away: 0
+          },
+          MKav: {
+              home: 0,
+              away: 0
+          },
+          xGav: {
+              home: 0,
+              away: 0
+          }
+      };
   }
 
   addTeam(team) {
@@ -23,5 +41,9 @@ module.exports = class Country {
           this.teams.set(name, new Team(name));
       }
       return this.teams.get(name);
+  }
+
+  calcAv() {
+
   }
 };
