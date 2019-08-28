@@ -5,23 +5,9 @@ module.exports = class Country {
       this.countryName = countryName;
       this.teams = new Map();
       this.data = {
-          xGSum: {
-              home: 0,
-              away: 0
-          },
-          Sav: {
-              home: 0,
-              away: 0
-          },
-          MKav: {
-              home: 0,
-              away: 0
-          },
-          xGav: {
-              home: 0,
-              away: 0
-          }
-      };
+          home: this.templateAllData(),
+          away: this.templateAllData()
+      }
   }
 
   addTeam(team) {
@@ -45,5 +31,26 @@ module.exports = class Country {
 
   calcAv() {
 
+  }
+
+  templateAllData() {
+       return {
+           xGSum: {
+               home: 0,
+               away: 0
+           },
+           Sav: {
+               home: 0,
+               away: 0
+           },
+           MKav: {
+               home: 0,
+               away: 0
+           },
+           xGav: {
+               home: 0,
+               away: 0
+           }
+       };
   }
 };
