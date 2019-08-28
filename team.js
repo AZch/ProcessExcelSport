@@ -31,6 +31,13 @@ module.exports = class Team {
         return false;
     }
 
+    makeAvangersAfterCount(edges) {
+        edges.data.Sav.home /= edges.edges.length;
+        edges.data.Sav.away /= edges.edges.length;
+        edges.data.MKav.home /= edges.edges.length;
+        edges.data.MKav.away /= edges.edges.length;
+    }
+
     updateEdgeData(newEdge, oldEdgeData) {
         oldEdgeData.countGame++;
         if (newEdge.baseData.data.home > newEdge.baseData.data.away) {
