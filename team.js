@@ -16,7 +16,7 @@ module.exports = class Team {
     addEdgeHome(edge) {
         if (edge instanceof Edge) {
             this.edgesHome.edges.push(edge);
-            this.edgesHome.data = this.updateEdgeData(edge, this.edgesHome.data);
+            this.edgesHome.data = this.updateEdgeData(edge, this.edgesHome.data, true);
             return true;
         }
         return false;
@@ -25,7 +25,7 @@ module.exports = class Team {
     addEdgeAway(edge) {
         if (edge instanceof Edge) {
             this.edgesAway.edges.push(edge);
-            this.edgesAway.data = this.updateEdgeData(edge, this.edgesAway.data);
+            this.edgesAway.data = this.updateEdgeData(edge, this.edgesAway.data, false);
             return true;
         }
         return false;
@@ -38,16 +38,15 @@ module.exports = class Team {
         edges.data.MKav.away /= edges.edges.length;
     }
 
-    updateEdgeData(newEdge, oldEdgeData) {
-        oldEdgeData.countGame++;
-        if (newEdge.baseData.data.home > newEdge.baseData.data.away) {
+    updateEdgeData(newEdge, oldEdgeData, isHome) {
+        if (isHome ? newEdge.baseData.data.home > newEdge.baseData.data.away : newEdge.baseData.data.home < newEdge.baseData.data.away ) {
             oldEdgeData.win++;
             oldEdgeData.points += 3;
-        } else if (newEdge.baseData.data.home < newEdge.baseData.data.away) {
+        } else if (isHome ? newEdge.baseData.data.home < newEdge.baseData.data.away : newEdge.baseData.data.home > newEdge.baseData.data.away) {
             oldEdgeData.lose++;
-            oldEdgeData.points += 1;
         } else {
             oldEdgeData.x++;
+            oldEdgeData.points += 1;
         }
         oldEdgeData.goalsHome += newEdge.baseData.data.home;
         oldEdgeData.goalsAway += newEdge.baseData.data.away;
@@ -65,7 +64,6 @@ module.exports = class Team {
 
     templateDataTeam() {
         return {
-            countGame: 0,
             win: 0,
             x: 0,
             lose: 0,
