@@ -15,7 +15,10 @@ function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
     let countrys = [];
     for (let worksheet of workbook.worksheets) {
         let country = new Country(worksheet.name);
-        for (let row = workParams.indexStartReadRow.row; row < worksheet._rows.length - 1; row++) {
+        for (let row = workParams.indexStartReadRow.row; row < worksheet._rows.length; row++) {
+            if (worksheet._rows[row]._cells[workParams.indexColumnHome.column] === undefined) {
+                break;
+            }
             let data = new DataGame();
             let teamHome = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnHome.column]._value.model.value);
             let teamAway = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnAway.column]._value.model.value);

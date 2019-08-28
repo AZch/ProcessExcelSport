@@ -25,6 +25,7 @@ module.exports = class Team {
     addEdgeAway(edge) {
         if (edge instanceof Edge) {
             this.edgesAway.edges.push(edge);
+            this.edgesAway.data = this.updateEdgeData(edge, this.edgesAway.data);
             return true;
         }
         return false;

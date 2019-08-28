@@ -6,9 +6,9 @@ module.exports = class DataGame {
 
     addData(data) {
         if (this.data.home === null) {
-            this.data.home = data;
+            this.data.home = parseInt(data);
         } else if (this.data.away === null) {
-            this.data.away = data;
+            this.data.away = parseInt(data);
         } else if (this.data.xG.home === null) {
             this.data.xG.home = data;
         } else if (this.data.xG.away === null) {
@@ -19,10 +19,10 @@ module.exports = class DataGame {
             this.data.S.away = data;
         } else if (this.data.MK.home === null) {
             this.data.MK.home = data;
-        } else if (this.data.MK.away === null) {
-            this.data.MK.away = data;
         } else if (this.data.MK.x === null) {
             this.data.MK.x = data;
+        } else if (this.data.MK.away === null) {
+            this.data.MK.away = data;
         } else if (this.data.MK.under === null) {
             this.data.MK.under = data;
         } else if (this.data.MK.over === null) {
