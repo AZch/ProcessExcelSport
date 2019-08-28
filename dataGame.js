@@ -66,6 +66,10 @@ function templateEdgeData() {
             x: null,
             under: null,
             over: null,
+        },
+        xP: {
+            home: 0.0,
+            away: 0.0
         }
     }
 }

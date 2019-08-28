@@ -7,6 +7,8 @@ module.exports = class Edge {
       //      this.validateGameData(data)) {
       this.home = this.dataTeamFromTemplate(homeTeam, data);
       this.away = this.dataTeamFromTemplate(awayTeam, data);
+      data.data.xP.home = data.data.MK.home * 3 / 100 + data.data.MK.x / 100;
+      data.data.xP.away = data.data.MK.away * 3 / 100 + data.data.MK.x / 100;
       this.baseData = data;
 
       //}

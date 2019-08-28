@@ -59,6 +59,8 @@ module.exports = class Team {
 
         oldEdgeData.MKav.home += newEdge.baseData.data.MK.home;
         oldEdgeData.MKav.away += newEdge.baseData.data.MK.away;
+
+        oldEdgeData.xPoints += isHome ? newEdge.baseData.data.xP.home : newEdge.baseData.data.xP.away;
         return oldEdgeData;
     }
 
@@ -68,6 +70,7 @@ module.exports = class Team {
             x: 0,
             lose: 0,
             points: 0,
+            xPoints: 0,
             goalsHome: 0,
             goalsAway: 0,
             xGSum: {
