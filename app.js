@@ -34,6 +34,11 @@ function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
 
             }
         }
+
+        country.teams.forEach((team) => {
+            team.makeAvangersAfterCount(team.edgesHome);
+            team.makeAvangersAfterCount(team.edgesAway);
+        });
         return country;
         countrys.push(country);
     }

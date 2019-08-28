@@ -3,7 +3,7 @@ const Team = require('./team');
 module.exports = class Country {
   constructor(countryName) {
       this.countryName = countryName;
-      this.teams = {};
+      this.teams = new Map();
   }
 
   addTeam(team) {
@@ -19,9 +19,9 @@ module.exports = class Country {
   }
 
   getTeamByName(name) {
-      if (this.teams[name] === undefined) {
-          this.teams[name] = new Team(name);
+      if (this.teams.get(name) === undefined) {
+          this.teams.set(name, new Team(name));
       }
-      return this.teams[name];
+      return this.teams.get(name);
   }
 };
