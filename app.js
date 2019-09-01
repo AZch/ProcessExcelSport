@@ -5,6 +5,7 @@ const DataGame = require('./dataGame');
 
 const inputFile = "shedule.xlsx";
 const outputFile = 'tables.xlsx';
+const resultRowStart = 2;
 
 async function ReadXLSX(fileName) {
     let workbook = new Excel.Workbook();
@@ -164,7 +165,7 @@ ReadXLSX(inputFile).then((workbook) => {
     let workbookTable = new Excel.Workbook();
     for (let country of countrys) {
         let sheet = workbookTable.addWorksheet(country.countryName);
-        let index = 2;
+        let index = resultRowStart;
         country.teams.forEach((team) => {
             const strIndex = index.toString();
             const startColumn = 'A';
