@@ -2,12 +2,31 @@ const Team = require('./team');
 
 module.exports = class Country {
   constructor(countryName) {
+      this.startTime = new Date().getTime();
+      this.lastTimeWork = new Date().getTime();
       this.countryName = countryName;
       this.teams = new Map();
       this.data = {
           home: this.templateAllData(),
           away: this.templateAllData()
       }
+  }
+
+  getTimeWork() {
+      return (new Date().getTime - this.startTime);
+  }
+
+  getLastTimeWork() {
+      return (this.lastTimeWork - this.startTime);
+  }
+
+  getLastTimeWorkSecond() {
+      return (this.lastTimeWork - this.startTime) / 1000;
+  }
+
+  setLastTimeWork() {
+      this.lastTimeWork = new Date().getTime();
+      return this.getLastTimeWork()
   }
 
   getTeamByName(name) {

@@ -3,8 +3,8 @@ const Country = require('./country');
 const Edge = require('./edge');
 const DataGame = require('./dataGame');
 
-const inputFile = "shedule.xlsx";
-const outputFile = 'tables.xlsx';
+const inputFile = "../shedule.xlsx";
+const outputFile = '../tables.xlsx';
 const resultRowStart = 2;
 
 async function ReadXLSX(fileName) {
@@ -44,6 +44,7 @@ function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
         country.calcAllEdgeData();
         country.calcAllTeamData();
         country.calcAllTeamFinalData();
+        country.setLastTimeWork();
 
         countrys.push(country);
     }
@@ -74,70 +75,70 @@ function isString (value) {
 }
 
 function fillHeader(sheet, command, column, strIndex) {
+    const widthColumn = 7;
     sheet.getCell(column + strIndex).value = "Team" + command;
     sheet.getColumn(column).width = 15;
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "RA" + command[0],
-        '0070C0');
+        "RA" + command[0], widthColumn,
+        '7CC6FE');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "RD" + command[0],
-        'FF0000' );
+        "RD" + command[0], widthColumn,
+        'FEAEAE' );
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "RxG" + command[0],
-        '00B050');
+        "RxG" + command[0], widthColumn,
+        '92D050');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "RxGO" + command[0],
-        '7030A0');
+        "RxGO" + command[0], widthColumn,
+        'B888DA');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "MKW" + command[0],
-        'B0C1CE', '0070C0');
+        "MKW" + command[0], widthColumn,
+        'D8D8D8', '0070C0');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "MKL" + command[0],
-        'B0C1CE', 'FF0000');
+        "MKL" + command[0], widthColumn,
+        'D8D8D8', 'FF0000');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "xG" + command[0],
+        "xG" + command[0], widthColumn,
         'FFFFFF', '00B050');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "xGA" + command[0],
+        "xGA" + command[0], widthColumn,
         'FFFFFF', '7030A0');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "G/xG" + command[0],
-        'B0C1CE', '000000');
+        "G/xG" + command[0], widthColumn,
+        'B0C0CE', '000000');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        "fort_" + command[0],
-        'B0C1CE');
+        "fort_" + command[0], widthColumn,
+        'B0C0CE');
     return getNextExcelLetter(column);
 }
 
-function fillCellWithColor(sheet, column, row, value, fillColor, fontColor = '000000') {
+function fillCellWithColor(sheet, column, row, value, width = 7, fillColor='FFFFFF', fontColor = '000000') {
     const roundParam = 100;
-    sheet.getColumn(column).width = 7;
     const cell = column + row;
     sheet.getCell(cell).value = isString(value) ? value : Math.round(value * roundParam) / roundParam;
     sheet.getCell(cell).font = {color: { argb: fontColor }};
     sheet.getColumn(column).width = 7;
     sheet.getCell(cell).fill = {
         type: 'pattern',
-        pattern:'darkVertical',
+        pattern:'solid',
         fgColor:{argb: fillColor}
     };
     sheet.getCell(cell).border = {
@@ -146,6 +147,7 @@ function fillCellWithColor(sheet, column, row, value, fillColor, fontColor = '00
         bottom: {style:'thin'},
         right: {style:'thin'}
     };
+    sheet.getColumn(column).width = width;
 }
 
 function getNextExcelLetter(letter) {
@@ -165,63 +167,66 @@ function getNextExcelLetter(letter) {
 }
 
 function fillExcelCommand(sheet, command, column, strIndex, edges, team) {
+    const widthColumn = 7;
     sheet.getCell(column + strIndex).value = team.name;
     sheet.getColumn(column).width = 15;
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team.resultCalcParams[command].RatingAttack,
-        '0070C0');
+        team.resultCalcParams[command].RatingAttack,  widthColumn,
+        '7CC6FE');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team.resultCalcParams[command].RatingDefend,
-        'FF0000' );
+        team.resultCalcParams[command].RatingDefend, widthColumn,
+        'FEAEAE');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team.resultCalcParams[command].RatingxG,
-        '00B050');
+        team.resultCalcParams[command].RatingxG, widthColumn,
+        '92D050');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team.resultCalcParams[command].RatingxGOther,
-        '7030A0');
+        team.resultCalcParams[command].RatingxGOther, widthColumn,
+        'B888DA');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team[edges].data.MKaverage.home,
-        'B0C1CE', '0070C0');
+        team[edges].data.MKaverage.home, widthColumn,
+        'D8D8D8', '0070C0');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team[edges].data.MKaverage.away,
-        'B0C1CE', 'FF0000');
+        team[edges].data.MKaverage.away, widthColumn,
+        'D8D8D8', 'FF0000');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team[edges].data.calc.xGaverage,
+        team[edges].data.calc.xGaverage, widthColumn,
         'FFFFFF', '00B050');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team[edges].data.calc.xGAaverage,
+        team[edges].data.calc.xGAaverage, widthColumn,
         'FFFFFF', '7030A0');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team[edges].data.calc.Gby_xG,
-        'B0C1CE', '000000');
+        team[edges].data.calc.Gby_xG, widthColumn,
+        'B0C0CE', '000000');
 
     column = getNextExcelLetter(column);
     fillCellWithColor(sheet, column, strIndex,
-        team[edges].data.calc.fortune,
-        'B0C1CE', team[edges].data.calc.fortune > 0 ? '000000' : 'FF0000');
+        team[edges].data.calc.fortune, widthColumn,
+        'B0C0CE', team[edges].data.calc.fortune > 0 ? '000000' : 'FF0000');
     return getNextExcelLetter(column);
 }
 
 ReadXLSX(inputFile).then((workbook) => {
     const countrys = MakeDataFromFile(workbook);
     let workbookTable = new Excel.Workbook();
+    const redColumnWidth = 2;
+    const startTime = new Date().getTime();
     for (let country of countrys) {
         let sheet = workbookTable.addWorksheet(country.countryName);
         let index = resultRowStart;
@@ -232,18 +237,26 @@ ReadXLSX(inputFile).then((workbook) => {
             const strIndex = index.toString();
             const nextColumn = fillExcelCommand(sheet, 'home', startColumn, strIndex, 'edgesHome', team);
 
-            sheet.getCell(nextColumn + strIndex).fill = {
-                type: 'pattern',
-                pattern:'darkVertical',
-                fgColor:{argb: 'FF0000'}
-            };
-            sheet.getColumn(nextColumn).width = 2;
+            fillCellWithColor(sheet, nextColumn, strIndex,
+                "", 2,
+                'FF0000');
+
             middleColumn = getNextExcelLetter(nextColumn);
             fillExcelCommand(sheet, 'away', middleColumn, strIndex, 'edgesAway', team);
 
             index++;
         });
         fillHeader(sheet, 'away', middleColumn, 1);
+        fillCellWithColor(sheet, 'B', index.toString(),
+            "calc:");
+        fillCellWithColor(sheet, 'C', index.toString(),
+            country.getLastTimeWorkSecond().toString() + " s.");
+        index++;
+        fillCellWithColor(sheet, 'B', index.toString(),
+            "fill:");
+        fillCellWithColor(sheet, 'C', index.toString(),
+            ((new Date().getTime() - startTime) / 1000).toString() + " s.");
+
 
     }
     workbookTable.xlsx.writeFile(outputFile);
