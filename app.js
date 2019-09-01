@@ -69,11 +69,70 @@ function templateIndexOneRead(column = null, row = null) {
     }
 }
 
+function isString (value) {
+    return typeof value === 'string' || value instanceof String;
+}
+
+function fillHeader(sheet, command, column, strIndex) {
+    sheet.getCell(column + strIndex).value = "Team" + command;
+    sheet.getColumn(column).width = 15;
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "RA" + command[0],
+        '0070C0');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "RD" + command[0],
+        'FF0000' );
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "RxG" + command[0],
+        '00B050');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "RxGO" + command[0],
+        '7030A0');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "MKW" + command[0],
+        'B0C1CE', '0070C0');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "MKL" + command[0],
+        'B0C1CE', 'FF0000');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "xG" + command[0],
+        'FFFFFF', '00B050');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "xGA" + command[0],
+        'FFFFFF', '7030A0');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "G/xG" + command[0],
+        'B0C1CE', '000000');
+
+    column = getNextExcelLetter(column);
+    fillCellWithColor(sheet, column, strIndex,
+        "fort_" + command[0],
+        'B0C1CE');
+    return getNextExcelLetter(column);
+}
+
 function fillCellWithColor(sheet, column, row, value, fillColor, fontColor = '000000') {
     const roundParam = 100;
     sheet.getColumn(column).width = 7;
     const cell = column + row;
-    sheet.getCell(cell).value = Math.round(value * roundParam) / roundParam;
+    sheet.getCell(cell).value = isString(value) ? value : Math.round(value * roundParam) / roundParam;
     sheet.getCell(cell).font = {color: { argb: fontColor }};
     sheet.getColumn(column).width = 7;
     sheet.getCell(cell).fill = {
@@ -166,9 +225,11 @@ ReadXLSX(inputFile).then((workbook) => {
     for (let country of countrys) {
         let sheet = workbookTable.addWorksheet(country.countryName);
         let index = resultRowStart;
+        const startColumn = 'A';
+        let middleColumn = '';
+        fillHeader(sheet, 'home', startColumn, 1);
         country.teams.forEach((team) => {
             const strIndex = index.toString();
-            const startColumn = 'A';
             const nextColumn = fillExcelCommand(sheet, 'home', startColumn, strIndex, 'edgesHome', team);
 
             sheet.getCell(nextColumn + strIndex).fill = {
@@ -177,10 +238,13 @@ ReadXLSX(inputFile).then((workbook) => {
                 fgColor:{argb: 'FF0000'}
             };
             sheet.getColumn(nextColumn).width = 2;
-            fillExcelCommand(sheet, 'away', getNextExcelLetter(nextColumn), strIndex, 'edgesAway', team);
+            middleColumn = getNextExcelLetter(nextColumn);
+            fillExcelCommand(sheet, 'away', middleColumn, strIndex, 'edgesAway', team);
 
             index++;
         });
+        fillHeader(sheet, 'away', middleColumn, 1);
+
     }
     workbookTable.xlsx.writeFile(outputFile);
 });
