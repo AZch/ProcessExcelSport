@@ -11,6 +11,38 @@ module.exports = class Team {
             edges: [],
             data: this.templateDataTeam()
         };
+        this.calcParams = {
+            home: this.templateCalcParams(),
+            away: this.templateCalcParams()
+        };
+        this.resultCalcParams = {
+            home: this.templateCalcParams(),
+            away: this.templateCalcParams()
+        };
+    }
+
+    calcAvarengeParams(edges,command) {
+        let result = this.templateCalcParams();
+        edges.forEach((edge) => {
+            result.RatingAttack += edge[command].team.calcParams[command].RatingAttack;
+            result.RatingDefend += edge[command].team.calcParams[command].RatingDefend;
+            result.RatingxG += edge[command].team.calcParams[command].RatingxG;
+            result.RatingxGOther += edge[command].team.calcParams[command].RatingxGOther;
+        });
+        result.RatingAttack /= edges.length;
+        result.RatingDefend /= edges.length;
+        result.RatingxG /= edges.length;
+        result.RatingxGOther /= edges.length;
+        return result;
+    }
+
+    templateCalcParams() {
+        return {
+            RatingAttack: 0.0,
+            RatingDefend: 0.0,
+            RatingxG: 0.0,
+            RatingxGOther: 0.0,
+        }
     }
 
     addEdgeHome(edge) {
@@ -32,10 +64,10 @@ module.exports = class Team {
     }
 
     makeAvangersAfterCount(edges, isHome) {
-        edges.data.Sav.home /= edges.edges.length;
-        edges.data.Sav.away /= edges.edges.length;
-        edges.data.MKav.home /= edges.edges.length;
-        edges.data.MKav.away /= edges.edges.length;
+        edges.data.Saverage.home /= edges.edges.length;
+        edges.data.Saverage.away /= edges.edges.length;
+        edges.data.MKaverage.home /= edges.edges.length;
+        edges.data.MKaverage.away /= edges.edges.length;
 
         isHome ? this.calcTable(edges, 'home', 'away') : this.calcTable(edges, 'away', 'home');
     }
@@ -46,10 +78,10 @@ module.exports = class Team {
         let xG = edges.data.xGSum;
         let points = edges.data.points;
         let xPoints = edges.data.xPoints;
-        edges.data.calc.xPav = edges.data.xPoints / count;
+        edges.data.calc.xPaverage = edges.data.xPoints / count;
         edges.data.calc.dG = ((goals[commandThis] - goals[commandEnemy]) - (xG[commandThis] - xG[commandEnemy])) / count;
-        edges.data.calc.xGav = xG[commandThis] / count;
-        edges.data.calc.xGAav = xG[commandEnemy] / count;
+        edges.data.calc.xGaverage = xG[commandThis] / count;
+        edges.data.calc.xGAaverage = xG[commandEnemy] / count;
         edges.data.calc.xgAvSum = edges.data.calc.xGav + edges.data.calc.xGAav;
         edges.data.calc.Gby_xG = (goals[commandThis] + goals[commandEnemy]) / (xG[commandThis] + xG[commandEnemy]);
         edges.data.calc.fortune = (points - xPoints) / count;
@@ -71,11 +103,11 @@ module.exports = class Team {
         oldEdgeData.xGSum.home += newEdge.baseData.data.xG.home;
         oldEdgeData.xGSum.away += newEdge.baseData.data.xG.away;
 
-        oldEdgeData.Sav.home += newEdge.baseData.data.S.home;
-        oldEdgeData.Sav.away += newEdge.baseData.data.S.away;
+        oldEdgeData.Saverage.home += newEdge.baseData.data.S.home;
+        oldEdgeData.Saverage.away += newEdge.baseData.data.S.away;
 
-        oldEdgeData.MKav.home += newEdge.baseData.data.MK.home;
-        oldEdgeData.MKav.away += newEdge.baseData.data.MK.away;
+        oldEdgeData.MKaverage.home += newEdge.baseData.data.MK.home;
+        oldEdgeData.MKaverage.away += newEdge.baseData.data.MK.away;
 
         oldEdgeData.xPoints += isHome ? newEdge.baseData.data.xP.home : newEdge.baseData.data.xP.away;
         return oldEdgeData;
@@ -96,11 +128,11 @@ module.exports = class Team {
                 home: 0,
                 away: 0
             },
-            Sav: {
+            Saverage: {
                 home: 0,
                 away: 0
             },
-            MKav: {
+            MKaverage: {
                 home: 0,
                 x: 0,
                 away: 0,
@@ -108,10 +140,10 @@ module.exports = class Team {
                 over: 0
             },
             calc: {
-                xPav: undefined,
+                xPaverage: undefined,
                 dG: undefined,
-                xGav: undefined,
-                xGAav: undefined,
+                xGaverage: undefined,
+                xGAaverage: undefined,
                 xgAvSum: undefined,
                 Gby_xG: undefined,
                 fortune: undefined
