@@ -3,7 +3,7 @@ const Country = require('./country');
 const Edge = require('./edge');
 const DataGame = require('./dataGame');
 
-const inputFile = "input.xlsx";
+const inputFile = "shedule.xlsx";
 const outputFile = 'tables.xlsx';
 
 async function ReadXLSX(fileName) {
@@ -45,7 +45,6 @@ function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
         country.calcAllTeamFinalData();
 
         countrys.push(country);
-        return countrys;
     }
     return countrys;
 }
@@ -54,10 +53,10 @@ function makeWorkParams() {
     return {
         indexStartReadRow: templateIndexOneRead(null, 3), // start read excel
         indexColumnHome: templateIndexOneRead(1), // team home name
-        indexColumnAway: templateIndexOneRead(6), // team home away
+        indexColumnAway: templateIndexOneRead(2), // team home away
         readRowIndex: {
-            start: templateIndexOneRead(12),
-            end: templateIndexOneRead(23),
+            start: templateIndexOneRead(4),
+            end: templateIndexOneRead(15),
         }
     };
 }
