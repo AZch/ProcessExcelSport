@@ -168,24 +168,21 @@ async function calcAndFill(worksheet, workbookOutTable, workbookOutFuture) {
     await saveFuture(futureEdges, workbookOutFuture.addWorksheet(country.countryName));
 }
 
-function makeCalcAndFill(workbookInput, workbookOutTable, workbookOutFuture) {
+async function makeCalcAndFill(workbookInput, workbookOutTable, workbookOutFuture) {
     for (let worksheet of workbookInput.worksheets) {
-        calcAndFill(worksheet, workbookOutTable, workbookOutFuture).then(() => {
-            workbookOutTable.xlsx.writeFile(outputFile);
-            workbookOutFuture.xlsx.writeFile(outputFileFuture);
-        });
+        await calcAndFill(worksheet, workbookOutTable, workbookOutFuture);
     }
 }
 
-function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
-    let countrys = [];
-    let futureEdgesCountrys = new Map();
-    for (let worksheet of workbook.worksheets) {
-
-
-        countrys.push(country);
+async function saveWorkbooks(workbooks, names) {
+    if (workbooks.length !== names.length) {
+        return false;
+    } else {
+        for (let i = 0; i < names.length; i++) {
+            workbooks[i].xlsx.writeFile(names[i]);
+        }
     }
-    return { countrys, futureEdgesCountrys };
+
 }
 
 async function calcFutureEdges(edges) {
@@ -396,13 +393,6 @@ function fillExcelCommand(sheet, command, column, strIndex, edges, team) {
     return getNextExcelLetter(column);
 }
 
-function fillCurrentCountrys(workbook, countrys) {
-    const startTime = new Date().getTime();
-    for (let country of countrys) {
-
-    }
-}
-
 function fillHeaderFuture(sheet, teamWidth, numWidth) {
     let column = 'A';
     const strRow = "1";
@@ -463,13 +453,14 @@ function dateToFormatString(date) {
     return isString(date) || date === undefined ? date : date.getMonth() + "." + date.getDay() + "." + date.getFullYear();
 }
 
-function fillFutureEdges(workbook, futureEdges) {
-
-}
-
 ReadXLSX(inputFile).then((workbook) => {
+    const startTime = new Date().getTime();
     let workbookTable = new Excel.Workbook();
     let workbookFuture = new Excel.Workbook();
-    makeCalcAndFill(workbook, workbookTable, workbookFuture);
+    makeCalcAndFill(workbook, workbookTable, workbookFuture).then(() => {
+        saveWorkbooks([workbookTable, workbookFuture],
+            [outputFile, outputFileFuture]);
+        console.log(new Date().getTime() - startTime);
+    });
 });
 
