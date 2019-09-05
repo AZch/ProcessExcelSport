@@ -82,7 +82,7 @@ module.exports = class Team {
         edges.data.calc.dG = ((goals[commandThis] - goals[commandEnemy]) - (xG[commandThis] - xG[commandEnemy])) / count;
         edges.data.calc.xGaverage = xG[commandThis] / count;
         edges.data.calc.xGAaverage = xG[commandEnemy] / count;
-        edges.data.calc.xgAvSum = edges.data.calc.xGav + edges.data.calc.xGAav;
+        edges.data.calc.xgAvSum = edges.data.calc.xGaverage + edges.data.calc.xGAaverage;
         edges.data.calc.Gby_xG = (goals[commandThis] + goals[commandEnemy]) / (xG[commandThis] + xG[commandEnemy]);
         edges.data.calc.fortune = (points - xPoints) / count;
     }

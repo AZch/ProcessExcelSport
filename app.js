@@ -14,60 +14,188 @@ async function ReadXLSX(fileName) {
     return workbook;
 }
 
+function isValidString(data) {
+    return data !== undefined &&
+        data !== null &&
+        data.trim() !== ''
+}
+
+function isValidColumn(column) {
+    return column !== undefined &&
+        column !== null
+}
+
+async function calcCountry(worksheet, workParams=makeWorkParams()) {
+    let country = new Country(worksheet.name);
+    let futureEdges = [];
+    for (let row = workParams.indexStartReadRow.row; row < worksheet._rows.length; row++) {
+        if (!isValidColumn(worksheet._rows[row]._cells[workParams.indexColumnHome.column]) || !isValidColumn(worksheet._rows[row]._cells[workParams.indexColumnHome.column]) ||
+            !isValidString(worksheet._rows[row]._cells[workParams.indexColumnAway.column]._value.model.value) ||
+            !isValidString(worksheet._rows[row]._cells[workParams.indexColumnHome.column]._value.model.value)) {
+            break;
+        }
+        let data = new DataGame();
+        let dateGame = worksheet._rows[row]._cells[workParams.indexColumnDate.column]._value.model.value;
+        let teamHome = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnHome.column]._value.model.value);
+        let teamAway = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnAway.column]._value.model.value);
+        for (let column = workParams.readRowIndex.start.column; column < workParams.readRowIndex.end.column; column++) {
+            if (!data.addData(worksheet._rows[row]._cells[column]._value.model.value)) {
+                break;
+            }
+        }
+        if (data.isValid()) {
+            const edge = new Edge(teamHome, teamAway, dateGame, data);
+            teamHome.addEdgeHome(edge);
+            teamAway.addEdgeAway(edge);
+        } else {
+            const edge = new Edge(teamHome, teamAway, dateGame, undefined);
+            futureEdges.push(edge);
+        }
+    }
+
+    country.teams.forEach((team) => {
+        team.makeAvangersAfterCount(team.edgesHome, true);
+        team.makeAvangersAfterCount(team.edgesAway, false);
+    });
+    country.calcAllEdgeData();
+    country.calcAllTeamData();
+    country.calcAllTeamFinalData();
+    country.setLastTimeWork();
+
+    futureEdges = await calcFutureEdges(futureEdges);
+    return { country, futureEdges }
+}
+
+async function saveCountry(country, worksheet) {
+    const startTime = new Date().getTime();
+    let index = resultRowStart;
+    const startColumn = 'A';
+    let middleColumn = '';
+    fillHeader(worksheet, 'home', startColumn, 1);
+    country.teams.forEach((team) => {
+        const strIndex = index.toString();
+        const nextColumn = fillExcelCommand(worksheet, 'home', startColumn, strIndex, 'edgesHome', team);
+
+        fillCellWithColor(worksheet, nextColumn, strIndex,
+            "", 2,
+            'FF0000');
+
+        middleColumn = getNextExcelLetter(nextColumn);
+        fillExcelCommand(worksheet, 'away', middleColumn, strIndex, 'edgesAway', team);
+
+        index++;
+    });
+    fillHeader(worksheet, 'away', middleColumn, 1);
+    fillCellWithColor(worksheet, 'B', index.toString(),
+        "calc:");
+    fillCellWithColor(worksheet, 'C', index.toString(),
+        country.getLastTimeWorkSecond().toString() + " s.");
+    index++;
+    fillCellWithColor(worksheet, 'B', index.toString(),
+        "fill:");
+    fillCellWithColor(worksheet, 'C', index.toString(),
+        ((new Date().getTime() - startTime) / 1000).toString() + " s.");
+
+
+}
+
+async function saveFuture(futureEdges, worksheet) {
+    const teamWidth = 12, numWidth = 7;
+    let row = 2;
+    fillHeaderFuture(worksheet, teamWidth, numWidth);
+    await futureEdges.forEach((edge) => {
+        let column = 'A';
+        const strRow = row.toString();
+        fillCellWithColor(worksheet, column, strRow, isString(edge.dateGame) ? edge.dateGame : dateToFormatString(edge.dateGame), numWidth);
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.home.team.name, teamWidth);
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.away.team.name, teamWidth);
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.futureData.chance.home, numWidth,
+            'FFFFFF', '5275C1');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.futureData.chance.away, numWidth,
+            'FFFFFF', 'FF0000');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.futureData.chance.x, numWidth,
+            'FFFFFF','08BC96');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.futureData.xG.home, numWidth,
+            'FFFFFF','5275C1');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.futureData.xG.away, numWidth,
+            'FFFFFF', 'FF0000');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow, edge.futureData.total, numWidth,
+            '92D050');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow,
+            edge.home.team.edgesHome.data.calc.Gby_xG, numWidth,
+            'B0C0CE', '000000');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow,
+            edge.away.team.edgesAway.data.calc.Gby_xG, numWidth,
+            'B0C0CE', '000000');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow,
+            edge.home.team.edgesHome.data.calc.fortune, numWidth,
+            'B0C0CE', edge.home.team.edgesHome.data.calc.fortune > 0 ? '000000' : 'FF0000');
+
+        column = getNextExcelLetter(column);
+        fillCellWithColor(worksheet, column, strRow,
+            edge.away.team.edgesAway.data.calc.fortune, numWidth,
+            'B0C0CE', edge.away.team.edgesAway.data.calc.fortune > 0 ? '000000' : 'FF0000');
+        row++;
+    });
+    return worksheet;
+}
+
+async function calcAndFill(worksheet, workbookOutTable, workbookOutFuture) {
+    const {country, futureEdges} = await calcCountry(worksheet);
+    await saveCountry(country, workbookOutTable.addWorksheet(country.countryName));
+    await saveFuture(futureEdges, workbookOutFuture.addWorksheet(country.countryName));
+}
+
+function makeCalcAndFill(workbookInput, workbookOutTable, workbookOutFuture) {
+    for (let worksheet of workbookInput.worksheets) {
+        calcAndFill(worksheet, workbookOutTable, workbookOutFuture).then(() => {
+            workbookOutTable.xlsx.writeFile(outputFile);
+            workbookOutFuture.xlsx.writeFile(outputFileFuture);
+        });
+    }
+}
+
 function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
     let countrys = [];
     let futureEdgesCountrys = new Map();
     for (let worksheet of workbook.worksheets) {
-        let country = new Country(worksheet.name);
-        let futureEdges = [];
-        for (let row = workParams.indexStartReadRow.row; row < worksheet._rows.length; row++) {
-            if (worksheet._rows[row]._cells[workParams.indexColumnHome.column] === undefined) {
-                break;
-            }
-            let data = new DataGame();
-            let dateGame = worksheet._rows[row]._cells[workParams.indexColumnDate.column]._value.model.value;
-            let teamHome = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnHome.column]._value.model.value);
-            let teamAway = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnAway.column]._value.model.value);
-            for (let column = workParams.readRowIndex.start.column; column < workParams.readRowIndex.end.column; column++) {
-                if (!data.addData(worksheet._rows[row]._cells[column]._value.model.value)) {
-                    break;
-                }
-            }
-            if (data.isValid()) {
-                const edge = new Edge(teamHome, teamAway, dateGame, data);
-                teamHome.addEdgeHome(edge);
-                teamAway.addEdgeAway(edge);
-            } else {
-                const edge = new Edge(teamHome, teamAway, dateGame, undefined);
-                futureEdges.push(edge);
-            }
-        }
 
-        country.teams.forEach((team) => {
-            team.makeAvangersAfterCount(team.edgesHome, true);
-            team.makeAvangersAfterCount(team.edgesAway, false);
-        });
-        country.calcAllEdgeData();
-        country.calcAllTeamData();
-        country.calcAllTeamFinalData();
-        country.setLastTimeWork();
-
-        calcFutureEdges(futureEdges);
-        futureEdgesCountrys.set(country.countryName, futureEdges);
 
         countrys.push(country);
     }
     return { countrys, futureEdgesCountrys };
 }
 
-function calcFutureEdges(edges) {
+async function calcFutureEdges(edges) {
     // P = (L + O) / 2 = ((F * O) + (R * B)) / 2
     // Q = (M + N) / 2 = ((G * N) + (S * C)) / 2
     // 100 - P - Q
     // AE = (AA + AD) / 2 = ((H * Q) + (U * D)) / 2
     // AF = (AB + AC) / 2 = ((I * P) + (T * E)) / 2
     // AG = AE + AF
-    edges.forEach((edge) => {
+    await edges.forEach((edge) => {
         if (edge.futureData !== undefined) {
             const teamHome = edge.home.team;
             const teamAway = edge.away.team;
@@ -92,6 +220,7 @@ function calcFutureEdges(edges) {
             edge.futureData.total = edge.futureData.xG.home + edge.futureData.xG.away;
         }
     });
+    return edges;
 
 }
 
@@ -270,35 +399,6 @@ function fillExcelCommand(sheet, command, column, strIndex, edges, team) {
 function fillCurrentCountrys(workbook, countrys) {
     const startTime = new Date().getTime();
     for (let country of countrys) {
-        let sheet = workbook.addWorksheet(country.countryName);
-        let index = resultRowStart;
-        const startColumn = 'A';
-        let middleColumn = '';
-        fillHeader(sheet, 'home', startColumn, 1);
-        country.teams.forEach((team) => {
-            const strIndex = index.toString();
-            const nextColumn = fillExcelCommand(sheet, 'home', startColumn, strIndex, 'edgesHome', team);
-
-            fillCellWithColor(sheet, nextColumn, strIndex,
-                "", 2,
-                'FF0000');
-
-            middleColumn = getNextExcelLetter(nextColumn);
-            fillExcelCommand(sheet, 'away', middleColumn, strIndex, 'edgesAway', team);
-
-            index++;
-        });
-        fillHeader(sheet, 'away', middleColumn, 1);
-        fillCellWithColor(sheet, 'B', index.toString(),
-            "calc:");
-        fillCellWithColor(sheet, 'C', index.toString(),
-            country.getLastTimeWorkSecond().toString() + " s.");
-        index++;
-        fillCellWithColor(sheet, 'B', index.toString(),
-            "fill:");
-        fillCellWithColor(sheet, 'C', index.toString(),
-            ((new Date().getTime() - startTime) / 1000).toString() + " s.");
-
 
     }
 }
@@ -360,83 +460,16 @@ function fillHeaderFuture(sheet, teamWidth, numWidth) {
 }
 
 function dateToFormatString(date) {
-    return date.getMonth() + "." + date.getDay() + "." + date.getFullYear();
+    return isString(date) || date === undefined ? date : date.getMonth() + "." + date.getDay() + "." + date.getFullYear();
 }
 
 function fillFutureEdges(workbook, futureEdges) {
-    const teamWidth = 12, numWidth = 7;
-    for (let edgesCountry of futureEdges) {
-        let sheet = workbook.addWorksheet(edgesCountry[0]);
-        let row = 2;
-        fillHeaderFuture(sheet, teamWidth, numWidth);
-        edgesCountry[1].forEach((edge) => {
-            let column = 'A';
-            const strRow = row.toString();
-            fillCellWithColor(sheet, column, strRow, isString(edge.dateGame) ? edge.dateGame : dateToFormatString(edge.dateGame), numWidth);
 
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.home.team.name, teamWidth);
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.away.team.name, teamWidth);
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.futureData.chance.home, numWidth,
-                'FFFFFF', '5275C1');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.futureData.chance.away, numWidth,
-                'FFFFFF', 'FF0000');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.futureData.chance.x, numWidth,
-                'FFFFFF','08BC96');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.futureData.xG.home, numWidth,
-                'FFFFFF','5275C1');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.futureData.xG.away, numWidth,
-                'FFFFFF', 'FF0000');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow, edge.futureData.total, numWidth,
-                '92D050');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow,
-                edge.home.team.edgesHome.data.calc.Gby_xG, numWidth,
-                'B0C0CE', '000000');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow,
-                edge.away.team.edgesAway.data.calc.Gby_xG, numWidth,
-                'B0C0CE', '000000');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow,
-                edge.home.team.edgesHome.data.calc.fortune, numWidth,
-                'B0C0CE', edge.home.team.edgesHome.data.calc.fortune > 0 ? '000000' : 'FF0000');
-
-            column = getNextExcelLetter(column);
-            fillCellWithColor(sheet, column, strRow,
-                edge.away.team.edgesAway.data.calc.fortune, numWidth,
-                'B0C0CE', edge.away.team.edgesAway.data.calc.fortune > 0 ? '000000' : 'FF0000');
-            row++;
-        });
-
-    }
 }
 
 ReadXLSX(inputFile).then((workbook) => {
-    const { countrys, futureEdgesCountrys } = MakeDataFromFile(workbook);
     let workbookTable = new Excel.Workbook();
-    fillCurrentCountrys(workbookTable, countrys);
-    workbookTable.xlsx.writeFile(outputFile);
-
     let workbookFuture = new Excel.Workbook();
-    fillFutureEdges(workbookFuture, futureEdgesCountrys);
-    workbookFuture.xlsx.writeFile(outputFileFuture);
+    makeCalcAndFill(workbook, workbookTable, workbookFuture);
 });
 
