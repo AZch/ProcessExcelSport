@@ -30,6 +30,9 @@ module.exports = class Country {
   }
 
   getTeamByName(name) {
+      if  (name !== undefined) {
+	  name = name.trim();
+      }
       if (this.teams.get(name) === undefined) {
           this.teams.set(name, new Team(name));
       }
@@ -38,8 +41,8 @@ module.exports = class Country {
 
   calcAllEdgeData() {
     this.teams.forEach((team) => {
-       this.calcAllEdgeWithParams("home", team.edgesHome);
-       this.calcAllEdgeWithParams("away", team.edgesAway);
+       this.calcAllEdgeWithParams(team, "home", team.edgesHome);
+       this.calcAllEdgeWithParams(team,"away", team.edgesAway);
     });
 
     this.calcResAvForCommand("Saverage");
@@ -48,7 +51,7 @@ module.exports = class Country {
   }
 
   calcResAvForCommand(paramAv) {
-      let countTeam = this.teams.size;
+      let countTeam = this.teams.size === 0 ? 1 : this.teams.size;
       this.data.home[paramAv].home /= countTeam;
       this.data.home[paramAv].away /= countTeam;
 
@@ -56,7 +59,7 @@ module.exports = class Country {
       this.data.away[paramAv].away /= countTeam;
   }
 
-  calcAllEdgeWithParams(command, edges) {
+  calcAllEdgeWithParams(team, command, edges) {
       this.calcOneAllEdgeData(command, edges, "xGSum");
       this.calcOneAllEdgeData(command, edges, "Saverage");
       this.calcOneAllEdgeData(command, edges, "MKaverage");

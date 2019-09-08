@@ -3,15 +3,23 @@ const Country = require('./country');
 const Edge = require('./edge');
 const DataGame = require('./dataGame');
 
-const inputFile = "../shedule.xlsx";
-const outputFile = '../tables.xlsx';
-const outputFileFuture = '../future.xlsx';
+const inputFile = "./shedule.xlsx";
+const outputFile = './tables.xlsx';
+const outputFileFuture = './future.xlsx';
 const resultRowStart = 2;
 
 async function ReadXLSX(fileName) {
     let workbook = new Excel.Workbook();
     await workbook.xlsx.readFile(fileName);
     return workbook;
+}
+
+function isInvalideCells(cells) {
+    return cells === undefined ||
+        cells === null ||
+        cells._value.model.value === undefined ||
+        cells._value.model.value.trim() === ""
+    
 }
 
 function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
@@ -21,7 +29,8 @@ function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
         let country = new Country(worksheet.name);
         let futureEdges = [];
         for (let row = workParams.indexStartReadRow.row; row < worksheet._rows.length; row++) {
-            if (worksheet._rows[row]._cells[workParams.indexColumnHome.column] === undefined) {
+            if (isInvalideCells(worksheet._rows[row]._cells[workParams.indexColumnAway.column]) ||
+                isInvalideCells(worksheet._rows[row]._cells[workParams.indexColumnHome.column])) {
                 break;
             }
             let data = new DataGame();
@@ -29,7 +38,8 @@ function MakeDataFromFile(workbook, workParams=makeWorkParams()) {
             let teamHome = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnHome.column]._value.model.value);
             let teamAway = country.getTeamByName(worksheet._rows[row]._cells[workParams.indexColumnAway.column]._value.model.value);
             for (let column = workParams.readRowIndex.start.column; column < workParams.readRowIndex.end.column; column++) {
-                if (!data.addData(worksheet._rows[row]._cells[column]._value.model.value)) {
+                if (worksheet._rows[row]._cells[column] !== undefined &&
+                    !data.addData(worksheet._rows[row]._cells[column]._value.model.value)) {
                     break;
                 }
             }
@@ -360,7 +370,7 @@ function fillHeaderFuture(sheet, teamWidth, numWidth) {
 }
 
 function dateToFormatString(date) {
-    return date.getMonth() + "." + date.getDay() + "." + date.getFullYear();
+    return isString(date) || date === undefined ? date : date.getMonth() + "." + date.getDay() + "." + date.getFullYear();
 }
 
 function fillFutureEdges(workbook, futureEdges) {

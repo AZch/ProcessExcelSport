@@ -4,7 +4,17 @@ module.exports = class DataGame {
         this.addData = this.addData.bind(this);
     }
 
+    isString (value) {
+        return typeof value === 'string' || value instanceof String;
+    }
+
+
     addData(data) {
+        if (data === undefined) {
+            return false;
+        } else {
+            data = (this.isString(data) ? data.trim() : data)
+        }
         if (this.data.home === null) {
             this.data.home = parseInt(data);
         } else if (this.data.away === null) {
@@ -34,17 +44,17 @@ module.exports = class DataGame {
     }
 
     isValid() {
-        return this.data.home !== undefined &&
-            this.data.away !== undefined &&
-            this.data.xG.home !== undefined &&
-            this.data.xG.away !== undefined &&
-            this.data.S.home !== undefined &&
-            this.data.S.away !== undefined &&
-            this.data.MK.home !== undefined &&
-            this.data.MK.away !== undefined &&
-            this.data.MK.x !== undefined &&
-            this.data.MK.under !== undefined &&
-            this.data.MK.over !== undefined;
+        return this.data.home !== undefined && this.data.home !== null &&
+            this.data.away !== undefined && this.data.away !== null &&
+            this.data.xG.home !== undefined && this.data.xG.home !== null &&
+            this.data.xG.away !== undefined && this.data.xG.away !== null &&
+            this.data.S.home !== undefined && this.data.S.home !== null &&
+            this.data.S.away !== undefined && this.data.S.away !== null &&
+            this.data.MK.home !== undefined && this.data.MK.home !== null &&
+            this.data.MK.away !== undefined && this.data.MK.away !== null &&
+            this.data.MK.x !== undefined && this.data.MK.x !== null &&
+            this.data.MK.under !== undefined && this.data.MK.under !== null &&
+            this.data.MK.over !== undefined && this.data.MK.over !== null;
     }
 };
 
